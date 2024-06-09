@@ -1,4 +1,4 @@
-# jMF2D v0.0.1
+# jMF2D v1.0.0
 
 # Installation
 
@@ -33,6 +33,16 @@ Note: If you encounter issues while executing python setup.py install, you can t
 The data used in the tutorial can be obtained from the following links: [datasets](https://drive.google.com/drive/folders/1tZdHL0QrlbxBE9h9FHCC4qafn2NFJVUX)
 
 Download the jMF2D code files and place the datasets folder into the directory. Then, follow the tutorials to complete the deconvolution and related visualizations.
+
+# The fully implemented jMF2D in Python has been uploaded to PyPi
+
+We have rewritten deconvolution.m in Python and uploaded the pure Python version of jMF2D to PyPi. You can now easily install and use jMF2D by following these steps.
+
+```
+conda create -n jMF2D python=3.8
+conda activate jMF2D
+pip install jMF2D
+```
 
 ## System Requirements
 
