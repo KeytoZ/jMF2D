@@ -119,7 +119,7 @@ def runDeconvolution(X, Y, L2, alpha=1, beta=1, gamma=1, loss=1e-3, max_iter=500
     if initial_F==0:
         F = np.random.rand(k,s)
     else:
-        F = np.linalg.lstsq(B,X)
+        F = np.linalg.lstsq(B,X)[0]
     E = np.random.rand(k,s)
     Z = np.ones((k,k))
     C = np.ones((k,k))
@@ -134,9 +134,12 @@ def runDeconvolution(X, Y, L2, alpha=1, beta=1, gamma=1, loss=1e-3, max_iter=500
     start_time = time.time()
     while converge==0 and iter<max_iter:
         # Update Z
-        Zk = Z
+        Zk = Z.copy()
         Z = Z - np.diag(np.diag(Z))
-        Z = Z * ( (Y.conj().T @ Y + delta1*C - T1) / (Y.conj().T @ Y @ Z + delta1*Z))
+        Z_num = Y.T @ Y + delta1 * C - T1
+        Z_den = Y.T @ Y @ Z + delta1 * Z
+        Z_den[Z_den == 0] = np.finfo(float).eps
+        Z = Z * (Z_num / Z_den)
         Z = Z / Z.sum(axis=1)[:,None]
         Z = Z - np.diag(np.diag(Z)-1)
         if sym==0:
@@ -145,39 +148,59 @@ def runDeconvolution(X, Y, L2, alpha=1, beta=1, gamma=1, loss=1e-3, max_iter=500
             Z = np.triu(Z, k=0)
             Z = Z + Z.conj().T - np.eye(k)
         tz = np.linalg.norm(Z-Zk,ord="fro")
+
         # cal L1
         L1 = np.diag(np.sum(Z,axis=0)) - Z
+
         # Update C
-        Ck = C
+        Ck = C.copy()
         Crow = np.sqrt(np.sum(np.abs(np.conj(C.conj().T)) * C.conj().T, axis=0))
         D1 = np.diag((1/2)*Crow)
-        C = C * ((delta1*Z + T1) / (alpha*D1*C+delta1*C))
+        C_num = delta1 * Z + T1
+        C_den = alpha * D1 @ C + delta1 * C
+        C_den[C_den == 0] = np.finfo(float).eps
+        C = C * (C_num / C_den)
         tc = np.linalg.norm(C-Ck,ord="fro")
+
         # Update T1
         T1 = T1 + delta1 * (Z-C)
+
         # Update B
-        Bk = B
-        B = B * ((X @ F.conj().T) / (B @ F @ F.conj().T + (beta/2) * (B @ L1 + B @ L1.conj().T)))
+        Bk = B.copy()
+        B_num = X @ F.T
+        B_den = B @ F @ F.T + (beta / 2) * (B @ L1 + B @ L1.T)
+        B_den[B_den == 0] = np.finfo(float).eps
+        B = B * (B_num / B_den)
         tb = np.linalg.norm(B-Bk,ord="fro")
-        B = np.maximum(B, 0.)
+        B = np.maximum(B, 0)
         B[np.isnan(B)] = 0
+
         # Update F
-        Fk = F
-        F = F *((B.conj().T @ X + delta2 * E) / (B.conj().T @ B @ F + delta2 * F + T2))
+        Fk = F.copy()
+        F_num = B.T @ X + delta2 * E
+        F_den = B.T @ B @ F + delta2 * F + T2
+        F_den[F_den == 0] = np.finfo(float).eps
+        F = F * (F_num / F_den)
         if normbyspot==1:
             F = F / F.sum(axis=0)[:, None]
         F = np.real(F)
         tf = np.linalg.norm(F-Fk,ord="fro")
-        F = np.maximum(F, 0.)
+        F = np.maximum(F, 0)
+
         # Update E
-        Ek = E
-        Erow = np.sqrt(np.sum(np.abs(np.conj(E.conj().T)) * E.conj().T, axis=0))
+        Ek = E.copy()
+        Erow = np.sqrt(np.sum(np.abs(E.conj().T) * E.T, axis=0))
         D2 = np.diag(1 / 2 * Erow)
-        E = E * ((delta2 * F + T2) / ((gamma/2)*(E @ L2 + E @ L2.conj().T) + alpha*D2 @ E + delta2 * E))
-        E = np.maximum(E, 0.)
+        E_num = delta2 * F + T2
+        E_den = (gamma / 2) * (E @ L2 + E @ L2.T) + alpha * D2 @ E + delta2 * E
+        E_den[E_den == 0] = np.finfo(float).eps
+        E = E * (E_num / E_den)
+        E = np.maximum(E, 0)
         te = np.linalg.norm(E-Ek,ord="fro")
+
         # Update T2
         T2 = T2 + delta2 * (F-E)
+
         # cal loss
         tol_loss = max(np.linalg.norm(B-Bk,ord='fro'),tf) / max(np.linalg.norm(B,ord='fro'), np.linalg.norm(F,ord='fro'))
         if tol_loss < loss:
