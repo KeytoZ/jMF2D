@@ -242,8 +242,7 @@ def Moran_I(genes_exp,x, y, k=5, knn=True):
             W[i,XYindices[i,:]]=1
         for i in range(0,genes_exp.shape[0]):
             W[i,i]=0
-    else:
-        W=calculate_adj_matrix(x=x,y=y, histology=False)
+
     I = pd.Series(index=genes_exp.columns, dtype="float64")
     for k in genes_exp.columns:
         X_minus_mean = np.array(genes_exp[k] - np.mean(genes_exp[k]))
@@ -263,8 +262,7 @@ def Geary_C(genes_exp,x, y, k=5, knn=True):
             W[i,XYindices[i,:]]=1
         for i in range(0,genes_exp.shape[0]):
             W[i,i]=0
-    else:
-        W=calculate_adj_matrix(x=x,y=y, histology=False)
+
     C = pd.Series(index=genes_exp.columns, dtype="float64")
     for k in genes_exp.columns:
         X=np.array(genes_exp[k])
