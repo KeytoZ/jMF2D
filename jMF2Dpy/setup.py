@@ -1,7 +1,7 @@
 import setuptools
 
 __lib_name__ = "jMF2D"
-__lib_version__ = "1.0.2"
+__lib_version__ = "1.1.0"
 __description__ = "jMF2D: Enhancing and accelerating cell type deconvolution of spatial " \
                   "transcriptomics with joint learning and non-negative matrix factorization"
 __url__ = "https://github.com/xkmaxidian/jMF2D"
