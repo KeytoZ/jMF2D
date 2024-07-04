@@ -43,7 +43,7 @@ def prepare_for_Deconvolution(sc_data, sc_annotation, sp_data, sp_location=None,
     if(select_hvg):
         print("## select the high varibale genes...")
         sc_adata = sc.AnnData(X=sc_data.T)
-        sc.pp.highly_variable_genes(sc_adata, flavor="seurat_v3", n_top_genes=top_n_genes)  # 用原始数据
+        sc.pp.highly_variable_genes(sc_adata, flavor="seurat_v3", n_top_genes=top_n_genes)
         sc_adata = sc_adata[:, sc_adata.var['highly_variable']]
         sc_data = sc_adata.to_df().T
 
