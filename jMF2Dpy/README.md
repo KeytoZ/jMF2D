@@ -1,4 +1,4 @@
-# jMF2D v1.0.0
+# jMF2D v1.0.2
 
 # Installation
 
